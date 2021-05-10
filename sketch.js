@@ -1,126 +1,108 @@
-const Engine = Matter.Engine;
-const World= Matter.World;
-const Bodies = Matter.Bodies;
-const Constraint = Matter.Constraint;
-var engine, world;
-var particles;
-var plinkos = [];
-var divisions =[];
-var particle;
 
-var divisionHeight=300;
-var score =0;
-var count = 0;
-var gameState ="start";
+const Engine = Matter.Engine;
+const World = Matter.World;
+const Bodies = Matter.Bodies;
+const Body = Matter.Body;
+const Constraint = Matter.Constraint;
+var boy, stone, mango1, mango2, mango3, mango4, mango5, mango6, mango7, mango8, mango9, ground, tree;
+
+
+function preload()
+{
+	boyImage = loadImage("images/boy.png");
+	treeImage = loadImage("images/tree.png");
+}
 
 function setup() {
-  createCanvas(800, 800);
-  engine = Engine.create();
-  world = engine.world;
-  ground = new Ground(width/2,height,width,20);
+	createCanvas(1520, 780);
 
-   for (var k = 0; k <=width; k = k + 80) {
-     divisions.push(new Divisions(k, height-divisionHeight/2, 10, divisionHeight));
-   }
-    for (var j = 75; j <=width; j=j+50) {
-       plinkos.push(new Plinko(j,75));
-    }
 
-    for (var j = 50; j <=width-10; j=j+50) {
-        plinkos.push(new Plinko(j,175));
-    }
+	engine = Engine.create();
+	world = engine.world;
 
-    for (var j = 75; j <=width; j=j+50) {
-        plinkos.push(new Plinko(j,275));
-    }
+	boy = createSprite(350,660,20,20);
+	boy.addImage(boyImage);
+	boy.scale = 0.15;
+	tree = createSprite(1200,420,600,600);
+	tree.addImage(treeImage);
+	tree.scale = 0.5;
+;
+	ground = new Ground(750,760,width,20);
+	stone = new Stone(280,575,60);
+	hold = new SlingShot(stone.body, {x:280 , y:575});
+	mango1 = new Mango(1300,300,60);
+	mango2 = new Mango(1180,230,60);
+	mango3 = new Mango(1340,180,60);
+	mango4 = new Mango(1380,390,60);
+	mango5 = new Mango(1000,320,60);
+	mango6 = new Mango(1190,340,60);
+	mango7 = new Mango(1250,170,60);
+	mango8 = new Mango(1420,310,60);
+	mango9 = new Mango(1080,340,60);
 
-    for (var j = 50; j <=width-10; j=j+50) {
-        plinkos.push(new Plinko(j,375));
-    }
-    
+
+	Engine.run(engine);
+  
 }
- 
+
+
 function draw() {
-  background("black");
-  textSize(18)
-  text("Score : "+score,20,40);
-  fill("white");
-  
-  textSize(23)
-  text(" 500 ", 5, 550);
-  text(" 500 ", 80, 550);
-  text(" 500 ", 160, 550);
-  text(" 500 ", 240, 550);
-  text(" 100 ", 320, 550);
-  text(" 100 ", 400, 550);
-  text(" 100 ", 480, 550);
-  text(" 200 ", 560, 550);
-  text(" 200 ", 640, 550);
-  text(" 200 ", 720, 550);
-  Engine.update(engine);
+  rectMode(CENTER);
+  background(219,219,219);
+  textSize(40);
+  text("Press Space to get a Second Chance to Play!!!",100,100)
+  drawSprites();
   ground.display();
-  
-  if ( gameState =="end") {
-    
-    textSize(90);
-    text("GameOver", 150, 300);
-    //return
-  }
+  mango1.display();
+  mango2.display();
+  mango3.display();
+  mango4.display();
+  mango5.display();
+  mango6.display();
+  mango7.display();
+  mango8.display();
+  mango9.display();
+  hold.display();
+  stone.display();
 
-  
+  detectCollision(stone,mango1);
+  detectCollision(stone,mango2);
+  detectCollision(stone,mango3);
+  detectCollision(stone,mango4);
+  detectCollision(stone,mango5);
+  detectCollision(stone,mango6);
+  detectCollision(stone,mango7);
+  detectCollision(stone,mango8);
+  detectCollision(stone,mango9);
 
-  
-
-  for (var i = 0; i < plinkos.length; i++) {
-     plinkos[i].display();  
-  }
- 
-    if(particle!=null)
-    {
-       particle.display();
-        
-        if (particle.body.position.y>760)
-        {
-              if (particle.body.position.x < 300) 
-              {
-                  score=score+500;      
-                  particle=null;
-                  if ( count>= 5) gameState ="end";                          
-              }
-
-
-              else if (particle.body.position.x < 600 && particle.body.position.x > 301 ) 
-              {
-                    score = score + 100;
-                    particle=null;
-                    if ( count>= 5) gameState ="end";
-
-              }
-              else if (particle.body.position.x < 900 && particle.body.position.x > 601 )
-              {
-                    score = score + 200;
-                    particle=null;
-                    if ( count>= 5)  gameState ="end";
-
-              }      
-              
-        }
-  
-      }
-
-   for (var k = 0; k < divisions.length; k++) 
-   {
-     divisions[k].display();
-   }
- 
 }
 
+function mouseDragged(){
+    Matter.Body.setPosition(stone.body,{x: mouseX, y: mouseY});
+}
 
-function mousePressed()
+function mouseReleased(){
+    hold.fly();
+}
+
+function detectCollision(lstone, lmango)
 {
-  if(gameState!=="end")
+ mangoBodyPosition = lmango.body.position
+ stoneBodyPosition = lstone.body.position
+
+  var distance = dist(stoneBodyPosition.x, stoneBodyPosition.y,mangoBodyPosition.x, mangoBodyPosition.y)
+  
+  if(distance<=lmango.r+lstone.r)
   {
-      count++;
-     particle=new Particle(mouseX, 10, 10, 10); 
-  }   
+	  Matter.Body.setStatic(lmango.body, false);
+  }
+
 }
+
+function keyPressed(){
+	if(keyCode === 32) {
+		Matter.Body.setPosition(stone.body, {x:280, y:575})
+		hold.attach(stone.body);
+	}
+}
+
